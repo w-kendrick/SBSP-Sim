@@ -11,16 +11,4 @@ AHexTile::AHexTile()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
-void AHexTile::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void AHexTile::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
 

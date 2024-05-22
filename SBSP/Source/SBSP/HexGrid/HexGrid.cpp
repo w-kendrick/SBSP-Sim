@@ -11,16 +11,4 @@ AHexGrid::AHexGrid()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
-void AHexGrid::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void AHexGrid::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
 

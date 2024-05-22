@@ -6,20 +6,34 @@
 #include "GameFramework/Actor.h"
 #include "HexGrid.generated.h"
 
+class AHexTile;
+
 UCLASS()
 class SBSP_API AHexGrid : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	AHexGrid();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AHexTile> HexTileClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UStaticMesh* HexTileMesh;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float TileOffset = 5.f; //Size of gap between tiles.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float TileScale = 1.f;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int GridHeight = 10;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int GridWidth = 10;
+	
+	
+private:
+
 };
+
