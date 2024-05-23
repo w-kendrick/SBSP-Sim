@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Components/ChildActorComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "HexGrid.generated.h"
@@ -17,6 +18,9 @@ public:
 	AHexGrid();
 
 protected:
+	virtual void BeginPlay() override;
+
+	virtual void ConstructTiles();
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AHexTile> HexTileClass;
@@ -34,6 +38,21 @@ protected:
 	
 	
 private:
+	UPROPERTY()
+	UChildActorComponent* ChildActorComponent;
 
+	UPROPERTY()
+	TArray<AHexTile*> HexTiles;
+	
+	float Radius;
+
+	void CreateTile(float XLoc, float YLoc, float ZLoc, float Scale);
+
+	float GetMeshRadius() const;
+	float CalcYTransformLocation(const int Index) const;
+	float CalcXTransformLocation(const int Index);
+
+	bool bHexFlipFlop = true;
+	float GetRowOffset();
 };
 
