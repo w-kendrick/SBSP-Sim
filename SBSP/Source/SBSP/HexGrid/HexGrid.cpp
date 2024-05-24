@@ -20,8 +20,8 @@ void AHexGrid::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Radius = GetMeshRadius();
-	ConstructTiles();
+	LongRadius = GetMeshRadius();
+	ConstructHexagon();
 }
 
 void AHexGrid::ConstructTiles()
@@ -36,6 +36,45 @@ void AHexGrid::ConstructTiles()
 			CreateTile(CalcXTransformLocation(j), YLoc, 0.f, TileScale);
 		}
 		bHexFlipFlop = !bHexFlipFlop;
+	}
+}
+
+void AHexGrid::ConstructHexagon()
+{
+	const float Sqrt3 = UKismetMathLibrary::Sqrt(3);
+	FVector CurrentPoint = GetActorLocation();
+
+	TArray<FVector> SpawnScheme = {
+		FVector(1.5f, -Sqrt3*0.5f, 0.0f),	//DR
+		FVector(0.f, -Sqrt3, 0.f),			//DX
+		FVector(-1.5f, -Sqrt3*0.5f, 0.f),	//DL
+		FVector(-1.5f, Sqrt3*0.5f, 0.f),	//UL
+		FVector(0.f, Sqrt3, 0.f),			//UX
+		FVector(1.5f, Sqrt3*0.5f, 0.f),	//UR
+	};
+
+	const float HexSide = LongRadius+20;
+	const int NumSpawns = SpawnScheme.Num();
+	
+	for (int mult = 0; mult <= BigHexagonRadius; mult++)
+	{
+		int hn = 0;
+		for (int j = 0; j < NumSpawns; j++)
+		{
+			for (int i = 0; i < mult; i++, hn++)
+			{
+				CreateTile(CurrentPoint.X, CurrentPoint.Y, CurrentPoint.Z, 1.f);
+				CurrentPoint += (SpawnScheme[j]*HexSide);
+			}
+			if (j==4)
+			{
+				CreateTile(CurrentPoint.X, CurrentPoint.Y, CurrentPoint.Z, 1.f);
+				CurrentPoint += (SpawnScheme[j]*HexSide);
+				hn++;
+				if (mult==BigHexagonRadius) break;
+			}
+		}
+		
 	}
 }
 
@@ -57,14 +96,13 @@ float AHexGrid::GetMeshRadius() const
 {
 	if (!HexTileMesh) return -1.f;
 	const float MaxX = HexTileMesh->GetBoundingBox().Max.X;
-
 	return TileScale*MaxX;
 }
 
 float AHexGrid::CalcYTransformLocation(const int Index) const
 {
-	const double HexEq = (Radius*2.0f)/UKismetMathLibrary::Sqrt(3);
-	const float YLoc = HexEq*Index*1.5f;;
+	const double Apothem = (LongRadius*2.0f)/UKismetMathLibrary::Sqrt(3);
+	const float YLoc = Apothem*Index*1.5f;
 	const float Offset = TileOffset*Index;
 
 	return YLoc + Offset;
@@ -72,12 +110,12 @@ float AHexGrid::CalcYTransformLocation(const int Index) const
 
 float AHexGrid::CalcXTransformLocation(const int Index)
 {
-	return (Radius*2.f*Index)+(TileOffset*Index)+GetRowOffset();
+	return (LongRadius*2.f*Index)+(TileOffset*Index)+GetRowOffset();
 }
 
 float AHexGrid::GetRowOffset()
 {
-	if (bHexFlipFlop) return Radius*-1.f;
+	if (bHexFlipFlop) return LongRadius*-1.f;
 	return 0.f;
 }
 

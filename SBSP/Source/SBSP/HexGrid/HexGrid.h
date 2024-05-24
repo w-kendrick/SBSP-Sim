@@ -21,6 +21,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void ConstructTiles();
+	virtual void ConstructHexagon();
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AHexTile> HexTileClass;
@@ -35,6 +36,9 @@ protected:
 	int GridHeight = 10;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	int GridWidth = 10;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int BigHexagonRadius = 2; //Radius in number of tiles
 	
 	
 private:
@@ -44,7 +48,7 @@ private:
 	UPROPERTY()
 	TArray<AHexTile*> HexTiles;
 	
-	float Radius;
+	float LongRadius;
 
 	void CreateTile(float XLoc, float YLoc, float ZLoc, float Scale);
 
