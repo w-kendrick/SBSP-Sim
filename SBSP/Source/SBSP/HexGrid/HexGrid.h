@@ -39,7 +39,8 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	int BigHexagonRadius = 2; //Radius in number of tiles
-	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float TileConstructionDelay = 0.2f;
 	
 private:
 	UPROPERTY()
@@ -50,7 +51,9 @@ private:
 	
 	float LongRadius;
 
-	void CreateTile(float XLoc, float YLoc, float ZLoc, float Scale);
+	UFUNCTION()
+	void CreateTile(const FVector& Location, float Scale);
+	
 
 	float GetMeshRadius() const;
 	float CalcYTransformLocation(const int Index) const;
@@ -58,5 +61,8 @@ private:
 
 	bool bHexFlipFlop = true;
 	float GetRowOffset();
+
+	FTimerHandle CreateTileTimerHandle;
+	FTimerDelegate CreateTileDelegate;
 };
 

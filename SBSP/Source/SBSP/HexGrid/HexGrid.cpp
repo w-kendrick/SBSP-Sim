@@ -24,21 +24,6 @@ void AHexGrid::BeginPlay()
 	ConstructHexagon();
 }
 
-void AHexGrid::ConstructTiles()
-{
-	if (!ChildActorComponent) return;
-	
-	for (int i=0; i < GridHeight; i++)
-	{
-		const float YLoc = CalcYTransformLocation(i);
-		for (int j=0; j < GridWidth; j++)
-		{
-			CreateTile(CalcXTransformLocation(j), YLoc, 0.f, TileScale);
-		}
-		bHexFlipFlop = !bHexFlipFlop;
-	}
-}
-
 void AHexGrid::ConstructHexagon()
 {
 	const float Sqrt3 = UKismetMathLibrary::Sqrt(3);
@@ -63,12 +48,15 @@ void AHexGrid::ConstructHexagon()
 		{
 			for (int i = 0; i < mult; i++, hn++)
 			{
-				CreateTile(CurrentPoint.X, CurrentPoint.Y, CurrentPoint.Z, 1.f);
+				const FVector Location = FVector(CurrentPoint.X, CurrentPoint.Y, CurrentPoint.Z);
+				
+				CreateTile(Location, 1.f);
 				CurrentPoint += (SpawnScheme[j]*HexSide);
 			}
 			if (j==4)
 			{
-				CreateTile(CurrentPoint.X, CurrentPoint.Y, CurrentPoint.Z, 1.f);
+				const FVector Location = FVector(CurrentPoint.X, CurrentPoint.Y, CurrentPoint.Z);
+				CreateTile(Location, 1.f);
 				CurrentPoint += (SpawnScheme[j]*HexSide);
 				hn++;
 				if (mult==BigHexagonRadius) break;
@@ -78,10 +66,8 @@ void AHexGrid::ConstructHexagon()
 	}
 }
 
-void AHexGrid::CreateTile(float XLoc, float YLoc, float ZLoc, float Scale)
+void AHexGrid::CreateTile(const FVector& Location, float Scale)
 {
-	const FVector Location = FVector(XLoc, YLoc, ZLoc);
-
 	if (AHexTile* SpawnedTile = Cast<AHexTile>(GetWorld()->SpawnActor(
 		HexTileClass,
 		&Location
@@ -97,6 +83,24 @@ float AHexGrid::GetMeshRadius() const
 	if (!HexTileMesh) return -1.f;
 	const float MaxX = HexTileMesh->GetBoundingBox().Max.X;
 	return TileScale*MaxX;
+}
+
+#pragma region Old Method
+
+void AHexGrid::ConstructTiles()
+{
+	if (!ChildActorComponent) return;
+	
+	for (int i=0; i < GridHeight; i++)
+	{
+		const float YLoc = CalcYTransformLocation(i);
+		for (int j=0; j < GridWidth; j++)
+		{
+			const FVector Location = FVector(CalcXTransformLocation(j), YLoc, 0.f);
+			CreateTile(Location, TileScale);
+		}
+		bHexFlipFlop = !bHexFlipFlop;
+	}
 }
 
 float AHexGrid::CalcYTransformLocation(const int Index) const
@@ -118,5 +122,7 @@ float AHexGrid::GetRowOffset()
 	if (bHexFlipFlop) return LongRadius*-1.f;
 	return 0.f;
 }
+
+#pragma endregion 
 
 
