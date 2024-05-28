@@ -1,29 +1,25 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "SBSPPlayerController.h"
+#include "ConstructionRobot.h"
 
 
 // Sets default values
-ASBSPPlayerController::ASBSPPlayerController()
+AConstructionRobot::AConstructionRobot()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
 // Called when the game starts or when spawned
-void ASBSPPlayerController::BeginPlay()
+void AConstructionRobot::BeginPlay()
 {
 	Super::BeginPlay();
-
-	const FInputModeGameAndUI InputModeGameAndUI = FInputModeGameAndUI();
-	SetInputMode(InputModeGameAndUI);
-	SetShowMouseCursor(true);
 	
 }
 
 // Called every frame
-void ASBSPPlayerController::Tick(float DeltaTime)
+void AConstructionRobot::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }

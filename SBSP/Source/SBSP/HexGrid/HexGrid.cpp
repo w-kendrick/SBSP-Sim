@@ -38,7 +38,7 @@ void AHexGrid::ConstructHexagon()
 		FVector(1.5f, Sqrt3*0.5f, 0.f),	//UR
 	};
 
-	const float HexSide = LongRadius+20;
+	const float HexSide = LongRadius+TileOffset;
 	const int NumSpawns = SpawnScheme.Num();
 	
 	for (int mult = 0; mult <= BigHexagonRadius; mult++)

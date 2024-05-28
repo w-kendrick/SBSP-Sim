@@ -27,9 +27,7 @@ protected:
 	TSubclassOf<AHexTile> HexTileClass;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UStaticMesh* HexTileMesh;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	float TileOffset = 5.f; //Size of gap between tiles.
+	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float TileScale = 1.f;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
@@ -40,7 +38,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	int BigHexagonRadius = 2; //Radius in number of tiles
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	float TileConstructionDelay = 0.2f;
+	float TileOffset = 5.f; //Size of gap between tiles.
 	
 private:
 	UPROPERTY()
