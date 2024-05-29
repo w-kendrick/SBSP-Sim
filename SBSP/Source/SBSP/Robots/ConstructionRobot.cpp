@@ -4,23 +4,34 @@
 #include "ConstructionRobot.h"
 
 
-// Sets default values
 AConstructionRobot::AConstructionRobot()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
 void AConstructionRobot::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-// Called every frame
 void AConstructionRobot::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	MoveToTarget(DeltaTime);
 }
+
+void AConstructionRobot::MoveToTarget(const float DeltaTime)
+{
+	FVector NewTargetLocation = TargetLocation;
+	NewTargetLocation.Z = NewTargetLocation.Z+75;
+	const FVector NewLocation = FMath::VInterpTo(GetActorLocation(), NewTargetLocation, DeltaTime, 1.f);
+	SetActorLocation(NewLocation);
+
+	if (FVector::Dist(GetActorLocation(), TargetLocation) < 1.f)
+	{
+		//TargetLocation = HarbourLocation;
+	}
+}
+
 

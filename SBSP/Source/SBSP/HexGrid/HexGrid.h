@@ -8,6 +8,7 @@
 #include "HexGrid.generated.h"
 
 class AHexTile;
+class AConstructionRobot;
 
 UCLASS()
 class SBSP_API AHexGrid : public AActor
@@ -20,47 +21,38 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void ConstructTiles();
+	//Hex Tiles
 	virtual void ConstructHexagon();
-
+	void CreateTile(const FVector& Location, float Scale);
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AHexTile> HexTileClass;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UStaticMesh* HexTileMesh;
-	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float TileScale = 1.f;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	int GridHeight = 10;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	int GridWidth = 10;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float TileSpacing = 0.f; //Space between tiles
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int BigHexagonRadius = 2; //Radius in number of tiles
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	float TileOffset = 5.f; //Size of gap between tiles.
+
+	float LongRadius;
+	float GetMeshRadius() const;
+	
+	//Robots
+	void SpawnRobot();
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AConstructionRobot> ConstructionRobotClass;
+	
 	
 private:
-	UPROPERTY()
-	UChildActorComponent* ChildActorComponent;
 
 	UPROPERTY()
 	TArray<AHexTile*> HexTiles;
+	UPROPERTY()
+	TArray<AConstructionRobot*> ConstructionRobots;
+	UPROPERTY()
+	AConstructionRobot* ConstructionRobot;
 	
-	float LongRadius;
 
-	UFUNCTION()
-	void CreateTile(const FVector& Location, float Scale);
-	
-
-	float GetMeshRadius() const;
-	float CalcYTransformLocation(const int Index) const;
-	float CalcXTransformLocation(const int Index);
-
-	bool bHexFlipFlop = true;
-	float GetRowOffset();
-
-	FTimerHandle CreateTileTimerHandle;
-	FTimerDelegate CreateTileDelegate;
 };
 
