@@ -3,26 +3,42 @@
 
 #include "HexGrid.h"
 
+#include "SAdvancedTransformInputBox.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "SBSP/HexGrid/HexTile.h"
+#include "SBSP/Robots/ConstructionRobot.h"
 
 
 AHexGrid::AHexGrid()
 {
 	PrimaryActorTick.bCanEverTick = true;
+}
 
-	ChildActorComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("ChildActorComponent"));
-	ChildActorComponent->SetChildActorClass(AHexTile::StaticClass());
+void AHexGrid::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (ConstructionRobot &&
+	ConstructionRobot->GetRobotState() == ERobotState::Free
+	&& !TileLocations.IsEmpty())
+	{
+		FVector Location;
+		TileLocations.Dequeue(Location);
+		ConstructionRobot->PlaceTileAtLocation(Location);
+	}
 }
 
 void AHexGrid::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	SpawnRobot();
 	LongRadius = GetMeshRadius();
 	ConstructHexagon();
 }
+
+#pragma region Hex Tiles
 
 void AHexGrid::ConstructHexagon()
 {
@@ -37,8 +53,8 @@ void AHexGrid::ConstructHexagon()
 		FVector(0.f, Sqrt3, 0.f),			//UX
 		FVector(1.5f, Sqrt3*0.5f, 0.f),	//UR
 	};
-
-	const float HexSide = LongRadius+TileOffset;
+	
+	const float HexSide = LongRadius + TileSpacing;
 	const int NumSpawns = SpawnScheme.Num();
 	
 	for (int mult = 0; mult <= BigHexagonRadius; mult++)
@@ -49,14 +65,13 @@ void AHexGrid::ConstructHexagon()
 			for (int i = 0; i < mult; i++, hn++)
 			{
 				const FVector Location = FVector(CurrentPoint.X, CurrentPoint.Y, CurrentPoint.Z);
-				
-				CreateTile(Location, 1.f);
+				TileLocations.Enqueue(Location);
 				CurrentPoint += (SpawnScheme[j]*HexSide);
 			}
 			if (j==4)
 			{
 				const FVector Location = FVector(CurrentPoint.X, CurrentPoint.Y, CurrentPoint.Z);
-				CreateTile(Location, 1.f);
+				TileLocations.Enqueue(Location);
 				CurrentPoint += (SpawnScheme[j]*HexSide);
 				hn++;
 				if (mult==BigHexagonRadius) break;
@@ -68,6 +83,11 @@ void AHexGrid::ConstructHexagon()
 
 void AHexGrid::CreateTile(const FVector& Location, float Scale)
 {
+	if (!HexTileClass) return;
+
+	FVector RobotLocation = Location;
+	RobotLocation.Z = RobotLocation.Z+75;
+	
 	if (AHexTile* SpawnedTile = Cast<AHexTile>(GetWorld()->SpawnActor(
 		HexTileClass,
 		&Location
@@ -85,44 +105,25 @@ float AHexGrid::GetMeshRadius() const
 	return TileScale*MaxX;
 }
 
-#pragma region Old Method
+#pragma endregion 
 
-void AHexGrid::ConstructTiles()
+#pragma region Robots
+
+void AHexGrid::SpawnRobot()
 {
-	if (!ChildActorComponent) return;
+	if (!ConstructionRobotClass || !HexTileMesh) return;
 	
-	for (int i=0; i < GridHeight; i++)
+	const FVector Location = GetActorLocation()+(HexTileMesh->GetBoundingBox().Max.Z*TileScale);
+	
+	if (AConstructionRobot* SpawnedRobot = Cast<AConstructionRobot>(GetWorld()->SpawnActor(
+		ConstructionRobotClass,
+		&Location
+		)))
 	{
-		const float YLoc = CalcYTransformLocation(i);
-		for (int j=0; j < GridWidth; j++)
-		{
-			const FVector Location = FVector(CalcXTransformLocation(j), YLoc, 0.f);
-			CreateTile(Location, TileScale);
-		}
-		bHexFlipFlop = !bHexFlipFlop;
+		ConstructionRobot = SpawnedRobot;
+		ConstructionRobot->SetHarbourLocation(Location);
+		ConstructionRobot->SetHexTileClass(HexTileClass);
 	}
 }
 
-float AHexGrid::CalcYTransformLocation(const int Index) const
-{
-	const double Apothem = (LongRadius*2.0f)/UKismetMathLibrary::Sqrt(3);
-	const float YLoc = Apothem*Index*1.5f;
-	const float Offset = TileOffset*Index;
-
-	return YLoc + Offset;
-}
-
-float AHexGrid::CalcXTransformLocation(const int Index)
-{
-	return (LongRadius*2.f*Index)+(TileOffset*Index)+GetRowOffset();
-}
-
-float AHexGrid::GetRowOffset()
-{
-	if (bHexFlipFlop) return LongRadius*-1.f;
-	return 0.f;
-}
-
 #pragma endregion 
-
-

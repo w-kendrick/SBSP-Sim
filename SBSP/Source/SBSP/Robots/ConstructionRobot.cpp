@@ -3,24 +3,72 @@
 
 #include "ConstructionRobot.h"
 
+#include "Kismet/KismetSystemLibrary.h"
+#include "SBSP/HexGrid/HexTile.h"
 
-// Sets default values
+
 AConstructionRobot::AConstructionRobot()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
-void AConstructionRobot::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
 void AConstructionRobot::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	MoveToTarget(DeltaTime);
 }
+
+void AConstructionRobot::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void AConstructionRobot::PlaceTileAtLocation(const FVector& Location)
+{
+	if (RobotState != ERobotState::Free) return;
+	RobotState = ERobotState::MovingTile;
+	TargetLocation = Location;
+	UKismetSystemLibrary::PrintString(this, TargetLocation.ToString());
+}
+
+void AConstructionRobot::PlaceTile()
+{
+	if (!HexTileClass) return;
+	
+	if (AHexTile* SpawnedTile = Cast<AHexTile>(GetWorld()->SpawnActor(
+		HexTileClass,
+		&TargetLocation
+	)))
+	{
+		RobotState = ERobotState::ReturningHome;
+		TargetLocation = HarbourLocation;
+		UKismetSystemLibrary::PrintString(this, "Placed Tile");
+	}
+}
+
+void AConstructionRobot::MoveToTarget(const float DeltaTime)
+{
+	FVector NewTargetLocation = TargetLocation;
+	NewTargetLocation.Z = NewTargetLocation.Z+75;
+	const FVector NewLocation = FMath::VInterpTo(
+		GetActorLocation(),
+		NewTargetLocation,
+		DeltaTime,
+		RobotSpeed);
+	SetActorLocation(NewLocation);
+	
+	if (RobotState == ERobotState::MovingTile &&
+		FVector::DistXY(GetActorLocation(), TargetLocation) < 5.f)
+	{
+		UKismetSystemLibrary::PrintString(this, "Placing Tile");
+		PlaceTile();
+	}
+	else if (RobotState == ERobotState::ReturningHome &&
+		FVector::DistXY(GetActorLocation(), HarbourLocation) < 5.f)
+	{
+		UKismetSystemLibrary::PrintString(this, "Returned Home");
+		RobotState = ERobotState::Free;
+	}
+}
+
 
