@@ -15,6 +15,20 @@ AHexGrid::AHexGrid()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+void AHexGrid::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (ConstructionRobot &&
+	ConstructionRobot->GetRobotState() == ERobotState::Free
+	&& !TileLocations.IsEmpty())
+	{
+		FVector Location;
+		TileLocations.Dequeue(Location);
+		ConstructionRobot->PlaceTileAtLocation(Location);
+	}
+}
+
 void AHexGrid::BeginPlay()
 {
 	Super::BeginPlay();
@@ -40,7 +54,6 @@ void AHexGrid::ConstructHexagon()
 		FVector(1.5f, Sqrt3*0.5f, 0.f),	//UR
 	};
 	
-	UKismetSystemLibrary::PrintString(this, FString::SanitizeFloat(TileSpacing));
 	const float HexSide = LongRadius + TileSpacing;
 	const int NumSpawns = SpawnScheme.Num();
 	
@@ -52,14 +65,13 @@ void AHexGrid::ConstructHexagon()
 			for (int i = 0; i < mult; i++, hn++)
 			{
 				const FVector Location = FVector(CurrentPoint.X, CurrentPoint.Y, CurrentPoint.Z);
-				ConstructionRobot->SetTargetLocation(Location);
-				CreateTile(Location, 1.f);
+				TileLocations.Enqueue(Location);
 				CurrentPoint += (SpawnScheme[j]*HexSide);
 			}
 			if (j==4)
 			{
 				const FVector Location = FVector(CurrentPoint.X, CurrentPoint.Y, CurrentPoint.Z);
-				CreateTile(Location, 1.f);
+				TileLocations.Enqueue(Location);
 				CurrentPoint += (SpawnScheme[j]*HexSide);
 				hn++;
 				if (mult==BigHexagonRadius) break;
@@ -75,7 +87,6 @@ void AHexGrid::CreateTile(const FVector& Location, float Scale)
 
 	FVector RobotLocation = Location;
 	RobotLocation.Z = RobotLocation.Z+75;
-	//ConstructionRobot->SetActorLocation(RobotLocation);
 	
 	if (AHexTile* SpawnedTile = Cast<AHexTile>(GetWorld()->SpawnActor(
 		HexTileClass,
@@ -100,9 +111,9 @@ float AHexGrid::GetMeshRadius() const
 
 void AHexGrid::SpawnRobot()
 {
-	if (!ConstructionRobotClass) return;
+	if (!ConstructionRobotClass || !HexTileMesh) return;
 	
-	const FVector Location = GetActorLocation()+100;
+	const FVector Location = GetActorLocation()+(HexTileMesh->GetBoundingBox().Max.Z*TileScale);
 	
 	if (AConstructionRobot* SpawnedRobot = Cast<AConstructionRobot>(GetWorld()->SpawnActor(
 		ConstructionRobotClass,
@@ -110,7 +121,8 @@ void AHexGrid::SpawnRobot()
 		)))
 	{
 		ConstructionRobot = SpawnedRobot;
-		ConstructionRobot->SetHarbourLocation(GetActorLocation());
+		ConstructionRobot->SetHarbourLocation(Location);
+		ConstructionRobot->SetHexTileClass(HexTileClass);
 	}
 }
 

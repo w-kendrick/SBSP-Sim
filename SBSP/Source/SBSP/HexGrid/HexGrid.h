@@ -5,6 +5,7 @@
 #include "Components/ChildActorComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Containers/Queue.h"
 #include "HexGrid.generated.h"
 
 class AHexTile;
@@ -17,6 +18,8 @@ class SBSP_API AHexGrid : public AActor
 
 public:
 	AHexGrid();
+
+	virtual void Tick(float DeltaSeconds) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -42,12 +45,13 @@ protected:
 	void SpawnRobot();
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AConstructionRobot> ConstructionRobotClass;
+	UPROPERTY(EditDefaultsOnly)
+	int32 NumberOfRobots = 1;
 	
 	
 private:
-
-	UPROPERTY()
 	TArray<AHexTile*> HexTiles;
+	TQueue<FVector> TileLocations;
 	UPROPERTY()
 	TArray<AConstructionRobot*> ConstructionRobots;
 	UPROPERTY()
