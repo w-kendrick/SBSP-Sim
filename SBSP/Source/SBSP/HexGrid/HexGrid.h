@@ -25,8 +25,8 @@ protected:
 	virtual void BeginPlay() override;
 
 	//Hex Tiles
-	virtual void ConstructHexagon();
-	void CreateTile(const FVector& Location, float Scale);
+	virtual void ConstructTiles();
+	virtual void GenerateTileLocations();
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AHexTile> HexTileClass;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -42,7 +42,7 @@ protected:
 	float GetMeshRadius() const;
 	
 	//Robots
-	void SpawnRobot();
+	void SpawnRobots();
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AConstructionRobot> ConstructionRobotClass;
 	UPROPERTY(EditDefaultsOnly)
@@ -57,6 +57,7 @@ private:
 	UPROPERTY()
 	AConstructionRobot* ConstructionRobot;
 	
-
+	static bool IsRobotFree(const AConstructionRobot* Robot);
+	
 };
 

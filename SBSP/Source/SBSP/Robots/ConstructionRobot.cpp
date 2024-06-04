@@ -48,6 +48,8 @@ void AConstructionRobot::PlaceTile()
 
 void AConstructionRobot::MoveToTarget(const float DeltaTime)
 {
+	if (!CanMove()) return;
+	
 	FVector NewTargetLocation = TargetLocation;
 	NewTargetLocation.Z = NewTargetLocation.Z+75;
 	const FVector NewLocation = FMath::VInterpTo(
@@ -69,6 +71,11 @@ void AConstructionRobot::MoveToTarget(const float DeltaTime)
 		UKismetSystemLibrary::PrintString(this, "Returned Home");
 		RobotState = ERobotState::Free;
 	}
+}
+
+bool AConstructionRobot::CanMove()
+{
+	return true;
 }
 
 

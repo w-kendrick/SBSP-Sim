@@ -47,6 +47,8 @@ private:
 	FVector HarbourLocation;
 	FVector TargetLocation;
 	void MoveToTarget(float DeltaTime);
+	bool CanMove();
+	
 
 public:
 	FORCEINLINE void SetHexTileClass(TSubclassOf<AHexTile> InHexTileClass) { HexTileClass = InHexTileClass; }

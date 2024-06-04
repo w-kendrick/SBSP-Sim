@@ -3,6 +3,7 @@
 
 #include "HexGrid.h"
 
+#include "PrimitiveSceneInfo.h"
 #include "SAdvancedTransformInputBox.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -19,28 +20,40 @@ void AHexGrid::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (ConstructionRobot &&
-	ConstructionRobot->GetRobotState() == ERobotState::Free
-	&& !TileLocations.IsEmpty())
-	{
-		FVector Location;
-		TileLocations.Dequeue(Location);
-		ConstructionRobot->PlaceTileAtLocation(Location);
-	}
+	ConstructTiles();
 }
 
 void AHexGrid::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	SpawnRobot();
+	SpawnRobots();
 	LongRadius = GetMeshRadius();
-	ConstructHexagon();
+	GenerateTileLocations();
+}
+
+void AHexGrid::ConstructTiles()
+{
+	if (TileLocations.IsEmpty()) return;
+	
+	TArray<AConstructionRobot*> FreeRobots = ConstructionRobots.FilterByPredicate(IsRobotFree);
+
+	for (AConstructionRobot* Robot : FreeRobots)
+	{
+		if (Robot &&
+		Robot->GetRobotState() == ERobotState::Free
+		&& !TileLocations.IsEmpty())
+		{
+			FVector Location;
+			TileLocations.Dequeue(Location);
+			Robot->PlaceTileAtLocation(Location);
+		}
+	}
 }
 
 #pragma region Hex Tiles
 
-void AHexGrid::ConstructHexagon()
+void AHexGrid::GenerateTileLocations()
 {
 	const float Sqrt3 = UKismetMathLibrary::Sqrt(3);
 	FVector CurrentPoint = GetActorLocation();
@@ -81,23 +94,6 @@ void AHexGrid::ConstructHexagon()
 	}
 }
 
-void AHexGrid::CreateTile(const FVector& Location, float Scale)
-{
-	if (!HexTileClass) return;
-
-	FVector RobotLocation = Location;
-	RobotLocation.Z = RobotLocation.Z+75;
-	
-	if (AHexTile* SpawnedTile = Cast<AHexTile>(GetWorld()->SpawnActor(
-		HexTileClass,
-		&Location
-	)))
-	{
-		HexTiles.Add(SpawnedTile);
-		SpawnedTile->SetActorScale3D(FVector::One()*TileScale);
-	}
-}
-
 float AHexGrid::GetMeshRadius() const
 {
 	if (!HexTileMesh) return -1.f;
@@ -109,21 +105,30 @@ float AHexGrid::GetMeshRadius() const
 
 #pragma region Robots
 
-void AHexGrid::SpawnRobot()
+void AHexGrid::SpawnRobots()
 {
 	if (!ConstructionRobotClass || !HexTileMesh) return;
-	
 	const FVector Location = GetActorLocation()+(HexTileMesh->GetBoundingBox().Max.Z*TileScale);
-	
-	if (AConstructionRobot* SpawnedRobot = Cast<AConstructionRobot>(GetWorld()->SpawnActor(
+
+	for (int i = 0; i < NumberOfRobots; i++)
+	{
+		if (AConstructionRobot* SpawnedRobot = Cast<AConstructionRobot>(GetWorld()->SpawnActor(
 		ConstructionRobotClass,
 		&Location
 		)))
-	{
-		ConstructionRobot = SpawnedRobot;
-		ConstructionRobot->SetHarbourLocation(Location);
-		ConstructionRobot->SetHexTileClass(HexTileClass);
+		{
+			SpawnedRobot->SetHarbourLocation(Location);
+			SpawnedRobot->SetHexTileClass(HexTileClass);
+			ConstructionRobots.Add(SpawnedRobot);
+			ConstructionRobot = SpawnedRobot;
+		}
 	}
+}
+
+bool AHexGrid::IsRobotFree(const AConstructionRobot* Robot)
+{
+	return Robot->GetRobotState() == ERobotState::Free;
+
 }
 
 #pragma endregion 
