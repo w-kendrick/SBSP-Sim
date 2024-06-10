@@ -16,6 +16,8 @@ class SBSP_API ASBSPHUD : public AHUD
 public:
 	ASBSPHUD();
 	virtual void Tick(float DeltaTime) override;
+	
+	void AddSimOverlay();
 
 protected:
 	virtual void BeginPlay() override;
