@@ -6,21 +6,24 @@
 #include "GameFramework/PlayerController.h"
 #include "SBSPPlayerController.generated.h"
 
+class ASBSPHUD;
+
 UCLASS()
 class SBSP_API ASBSPPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	ASBSPPlayerController();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	
 
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+
+private:
+	UPROPERTY()
+	ASBSPHUD* SBSPHUD;
+
 };

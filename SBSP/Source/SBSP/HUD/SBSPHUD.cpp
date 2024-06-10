@@ -14,7 +14,15 @@ ASBSPHUD::ASBSPHUD()
 void ASBSPHUD::BeginPlay()
 {
 	Super::BeginPlay();
+}
 
+void ASBSPHUD::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
+void ASBSPHUD::AddSimOverlay()
+{
 	if (SimOverlayClass)
 	{
 		SimOverlayRef = CreateWidget<USimOverlay>(GetOwningPlayerController(), SimOverlayClass);
@@ -23,10 +31,5 @@ void ASBSPHUD::BeginPlay()
 			SimOverlayRef->AddToViewport();
 		}
 	}
-}
-
-void ASBSPHUD::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 

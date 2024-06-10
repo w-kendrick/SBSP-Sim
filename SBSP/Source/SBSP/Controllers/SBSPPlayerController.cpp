@@ -3,11 +3,12 @@
 
 #include "SBSPPlayerController.h"
 
+#include "SBSP/HUD/SBSPHUD.h"
+
 
 // Sets default values
 ASBSPPlayerController::ASBSPPlayerController()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
@@ -19,12 +20,12 @@ void ASBSPPlayerController::BeginPlay()
 	const FInputModeGameAndUI InputModeGameAndUI = FInputModeGameAndUI();
 	SetInputMode(InputModeGameAndUI);
 	SetShowMouseCursor(true);
-	
+
+	if (ASBSPHUD* HUD = Cast<ASBSPHUD>(GetHUD()))
+	{
+		SBSPHUD = HUD;
+		SBSPHUD->AddSimOverlay();
+	}
 }
 
-// Called every frame
-void ASBSPPlayerController::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
 
